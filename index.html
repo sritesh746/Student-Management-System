@@ -171,24 +171,45 @@
      // Add Student
     document.getElementById("studentForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-       const student = {
-        roll_no: parseInt(document.getElementById("roll_no").value),
-        name: document.getElementById("name").value,
+
+      const rollNo = parseInt(document.getElementById("roll_no").value);
+      const name = document.getElementById("name").value;
+
+      // Check if roll number already exists in table
+      const rows = document.querySelectorAll("#studentBody tr");
+      let exists = false;
+      rows.forEach(row => {
+        const existingRoll = parseInt(row.cells[0].textContent);
+        if (existingRoll === rollNo) exists = true;
+      });
+
+      if (exists) {
+        alert(`Student with Roll No ${rollNo} is already admitted!`);
+        return;
+      }
+
+      const student = {
+        roll_no: rollNo,
+        name: name,
         father: document.getElementById("father").value,
         mother: document.getElementById("mother").value,
         course: document.getElementById("course").value,
         year: document.getElementById("year").value,
         contact: document.getElementById("contact").value
       };
+
       try {
         const res = await axios.post(`${apiUrl}/add`, student);
-        alert(res.data.message || "Student added!");
+        alert(res.data.message || "Student added successfully!");
         loadStudents();
         e.target.reset();
       } catch (err) {
         console.error("Error adding student:", err);
+        alert("Error adding student");
       }
     });
+
+
 
     // Delete Student (DELETE)
     document.getElementById("studentDeleteForm").addEventListener("submit", async (e) => {
