@@ -23,8 +23,17 @@
   </style>
 </head>
 <body>
+
+   <div class="container" style="margin-top:10px;">
+  <!-- Search Section -->
+  <div style="text-align:center; margin-bottom:15px; background:#34495e; padding:15px; border-radius:8px; box-shadow: 0 3px 8px rgba(0,0,0,0.2);">
+    <input type="text" id="searchInput" placeholder="🔍 Search Student by Roll No. or Name" 
+           style="padding:10px 15px; width:300px; border-radius:25px; border:none; outline:none; font-size:16px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: all 0.3s;">
+  </div>
+</div>
+
   <header>
-    DR ZAKRI HUSSAIN INSTITUTE, GOPALGANJ <br>
+    DR ZAKIR HUSSAIN INSTITUTE, GOPALGANJ <br>
     Student Management System
   </header>
 
@@ -55,7 +64,7 @@
     <div class="form-box" id="entryForm">
       <h2>New Student Entry</h2>
       <form id="studentForm">
-        <div class="form-group"><label>Roll No.</label><input type="text" id="roll" required></div>
+        <div class="form-group"><label>Roll No.</label><input type="text" id="roll_no" required></div>
         <div class="form-group"><label>Full Name</label><input type="text" id="name" required></div>
         <div class="form-group"><label>Father's Name</label><input type="text" id="father" required></div>
         <div class="form-group"><label>Mother's Name</label><input type="text" id="mother" required></div>
@@ -136,7 +145,7 @@
 
         (data.users || data).forEach((student, index) => {
           const row = `<tr>
-            <td>${student.roll || index + 1}</td>
+            <td>${student.roll_no || index+1}</td>
             <td>${student.firstName || student.name}</td>
             <td>${student.father || "N/A"}</td>
             <td>${student.mother || "N/A"}</td>
@@ -162,14 +171,14 @@
      // Add Student
     document.getElementById("studentForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const student = {
-        roll_no: roll.value,
-        name: name.value,
-        father: father.value,
-        mother: mother.value,
-        course: course.value,
-        year: year.value,
-        contact: contact.value
+       const student = {
+        roll_no: parseInt(document.getElementById("roll_no").value),
+        name: document.getElementById("name").value,
+        father: document.getElementById("father").value,
+        mother: document.getElementById("mother").value,
+        course: document.getElementById("course").value,
+        year: document.getElementById("year").value,
+        contact: document.getElementById("contact").value
       };
       try {
         const res = await axios.post(`${apiUrl}/add`, student);
@@ -199,38 +208,54 @@
     });
 
     // Update Student (PUT)
-    document.getElementById("studentUpdateForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const student = {
-      roll_no: updateRoll.value, // <-- add this
-      name: updateName.value,
-      father: updateFather.value,
-      mother: updateMother.value,
-      course: updateCourse.value,
-      year: updateYear.value,
-      contact: updateContact.value
-    };
+      document.getElementById("studentUpdateForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        // Always include roll_no
+        const student = {
+          roll_no: updateRoll.value,
+          name: updateName.value || undefined,
+          father: updateFather.value || undefined,
+          mother: updateMother.value || undefined,
+          course: updateCourse.value || undefined,
+          year: updateYear.value || undefined,
+          contact: updateContact.value || undefined
+        };
 
+        // remove only undefined fields
+        Object.keys(student).forEach(key => {
+          if (student[key] === undefined) delete student[key];
+        });
 
-      // remove empty fields
-      Object.keys(student).forEach(key => {
-        if (!student[key]) delete student[key];
-      });
-
-      try {
-        const res = await axios.put(`${apiUrl}/update`, student);
-        if (res.status === 200) {
-          alert(`Student Roll ${roll} updated successfully!`);
+        try {
+          const res = await axios.put(`${apiUrl}/update`, student);
+          alert(`Student Roll ${updateRoll.value} updated successfully!`);
           loadStudents();
           e.target.reset();
+        } catch (err) {
+          console.error("Error updating student:", err);
+          alert(err.response?.data?.message || "Error updating student");
         }
-      } catch (err) {
-        console.error("Error updating student:", err);
-      }
-    });
+      });
+
 
     // Load students initially
     loadStudents();
+
+    // Search Student
+document.getElementById("searchInput").addEventListener("input", function() {
+  const filter = this.value.toLowerCase();
+  const rows = document.querySelectorAll("#studentBody tr");
+  rows.forEach(row => {
+    const name = row.cells[1].textContent.toLowerCase();
+    const roll = row.cells[0].textContent.toLowerCase();
+    if (name.includes(filter) || roll.includes(filter)) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
+});
+
   </script>
 </body>
 </html>
