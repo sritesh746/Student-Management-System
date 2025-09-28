@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Management - DR ZAKRI HUSSAIN INSTITUTE, GOPALGANJ</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+    header { background: #2c3e50; color: #fff; padding: 20px; text-align: center; font-size: 22px; font-weight: bold; }
+    .container { width: 90%; margin: 20px auto; }
+    h2 { color: #2c3e50; margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    table th, table td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+    table th { background: #34495e; color: white; }
+    .form-box { background: #fff; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-radius: 5px; margin-top: 20px; display: none; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #2c3e50; }
+    input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    button { background: #2c3e50; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+    button:hover { background: #1a242f; }
+    .center { text-align: center; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    DR ZAKRI HUSSAIN INSTITUTE, GOPALGANJ <br>
+    Student Management System
+  </header>
+
+  <div class="container">
+    <h2>Admitted Students</h2>
+    <table id="studentTable">
+      <thead>
+        <tr>
+          <th>Roll No.</th>
+          <th>Name</th>
+          <th>Father's Name</th>
+          <th>Mother's Name</th>
+          <th>Course</th>
+          <th>Year</th>
+          <th>Contact</th>
+        </tr>
+      </thead>
+      <tbody id="studentBody"></tbody>
+    </table>
+
+    <div class="center">
+      <button onclick="showForm('entryForm')">➕ New Entry</button>
+      <button onclick="showForm('deleteForm')">🗑 Delete Student</button>
+      <button onclick="showForm('updateForm')">✏ Update Student</button>
+    </div>
+
+    <!-- New Entry Form -->
+    <div class="form-box" id="entryForm">
+      <h2>New Student Entry</h2>
+      <form id="studentForm">
+        <div class="form-group"><label>Roll No.</label><input type="text" id="roll" required></div>
+        <div class="form-group"><label>Full Name</label><input type="text" id="name" required></div>
+        <div class="form-group"><label>Father's Name</label><input type="text" id="father" required></div>
+        <div class="form-group"><label>Mother's Name</label><input type="text" id="mother" required></div>
+        <div class="form-group"><label>Course</label>
+          <select id="course" required>
+            <option value="BCA">BCA</option><option value="BBA">BBA</option>
+            <option value="B.Sc">B.Sc</option><option value="BA">BA</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Year</label>
+          <select id="year" required>
+            <option value="1st Year">1st Year</option><option value="2nd Year">2nd Year</option><option value="3rd Year">3rd Year</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Contact</label><input type="text" id="contact" required></div>
+        <button type="submit">Add Student</button>
+      </form>
+    </div>
+
+    <!-- Delete Student Form -->
+    <div class="form-box" id="deleteForm">
+      <h2>Delete Student</h2>
+      <form id="studentDeleteForm">
+        <div class="form-group"><label>Roll No.</label><input type="text" id="deleteRoll" required></div>
+        <div class="form-group"><label>Full Name</label><input type="text" id="deleteName" required></div>
+        <button type="submit" style="background:red;">Delete Student</button>
+      </form>
+    </div>
+
+    <!-- Update Student Form -->
+    <div class="form-box" id="updateForm">
+      <h2>Update Student</h2>
+      <form id="studentUpdateForm">
+        <div class="form-group"><label>Roll No. (ID)</label><input type="text" id="updateRoll" required></div>
+        <div class="form-group"><label>Full Name</label><input type="text" id="updateName"></div>
+        <div class="form-group"><label>Father's Name</label><input type="text" id="updateFather"></div>
+        <div class="form-group"><label>Mother's Name</label><input type="text" id="updateMother"></div>
+        <div class="form-group"><label>Course</label>
+          <select id="updateCourse">
+            <option value="">--Select--</option>
+            <option value="BCA">BCA</option><option value="BBA">BBA</option>
+            <option value="B.Sc">B.Sc</option><option value="BA">BA</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Year</label>
+          <select id="updateYear">
+            <option value="">--Select--</option>
+            <option value="1st Year">1st Year</option><option value="2nd Year">2nd Year</option><option value="3rd Year">3rd Year</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Contact</label><input type="text" id="updateContact"></div>
+        <button type="submit" style="background:orange;">Update Student</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const apiUrl = "https://studentapi-csqo.onrender.com"; // <-- your Render API URL
+
+    // <-- replace with your API
+    // GET request to fetch students
+    axios.get(apiUrl)
+      .then(response => {
+        console.log("✅ Students data:", response.data);
+      })
+      .catch(error => {
+        console.error("❌ Error fetching students:", error);
+      });
+
+    // Load Students (GET)
+    async function loadStudents() {
+      try {
+        const res = await axios.get(apiUrl);
+        const data = res.data;
+
+        const tbody = document.getElementById("studentBody");
+        tbody.innerHTML = "";
+
+        (data.users || data).forEach((student, index) => {
+          const row = `<tr>
+            <td>${student.roll || index + 1}</td>
+            <td>${student.firstName || student.name}</td>
+            <td>${student.father || "N/A"}</td>
+            <td>${student.mother || "N/A"}</td>
+            <td>${student.course || "BCA"}</td>
+            <td>${student.year || "1st Year"}</td>
+            <td>${student.phone || student.contact || "N/A"}</td>
+          </tr>`;
+          tbody.innerHTML += row;
+        });
+      } catch (err) {
+        console.error("Error loading students:", err);
+      }
+    }
+
+    // Show Form
+    function showForm(id) {
+      document.querySelectorAll(".form-box").forEach(f => f.style.display = "none");
+      document.getElementById(id).style.display = "block";
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // Add Student (POST)
+     // Add Student
+    document.getElementById("studentForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const student = {
+        roll_no: roll.value,
+        name: name.value,
+        father: father.value,
+        mother: mother.value,
+        course: course.value,
+        year: year.value,
+        contact: contact.value
+      };
+      try {
+        const res = await axios.post(`${apiUrl}/add`, student);
+        alert(res.data.message || "Student added!");
+        loadStudents();
+        e.target.reset();
+      } catch (err) {
+        console.error("Error adding student:", err);
+      }
+    });
+
+    // Delete Student (DELETE)
+    document.getElementById("studentDeleteForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const roll = deleteRoll.value;
+      const name = deleteName.value;
+      try {
+        const res = await axios.delete(`${apiUrl}/delete`, { data: { roll_no: deleteRoll.value } });
+        if (res.status === 200) {
+          alert(`Student ${name} (Roll: ${roll}) deleted successfully!`);
+          loadStudents();
+          e.target.reset();
+        }
+      } catch (err) {
+        console.error("Error deleting student:", err);
+      }
+    });
+
+    // Update Student (PUT)
+    document.getElementById("studentUpdateForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const student = {
+      roll_no: updateRoll.value, // <-- add this
+      name: updateName.value,
+      father: updateFather.value,
+      mother: updateMother.value,
+      course: updateCourse.value,
+      year: updateYear.value,
+      contact: updateContact.value
+    };
+
+
+      // remove empty fields
+      Object.keys(student).forEach(key => {
+        if (!student[key]) delete student[key];
+      });
+
+      try {
+        const res = await axios.put(`${apiUrl}/update`, student);
+        if (res.status === 200) {
+          alert(`Student Roll ${roll} updated successfully!`);
+          loadStudents();
+          e.target.reset();
+        }
+      } catch (err) {
+        console.error("Error updating student:", err);
+      }
+    });
+
+    // Load students initially
+    loadStudents();
+  </script>
+</body>
+</html>
