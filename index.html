@@ -214,42 +214,74 @@
     // Delete Student (DELETE)
     document.getElementById("studentDeleteForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const roll = deleteRoll.value;
-      const name = deleteName.value;
+
+      const rollNo = parseInt(document.getElementById("deleteRoll").value);
+      const name = document.getElementById("deleteName").value;
+
+      // Check if roll number exists in table
+      const rows = document.querySelectorAll("#studentBody tr");
+      let exists = false;
+      rows.forEach(row => {
+        const existingRoll = parseInt(row.cells[0].textContent);
+        if (existingRoll === rollNo) exists = true;
+      });
+
+      if (!exists) {
+        alert(`Data not found for Roll No ${rollNo}!`);
+        return;
+      }
+
+      // If exists, proceed to delete
       try {
-        const res = await axios.delete(`${apiUrl}/delete`, { data: { roll_no: deleteRoll.value } });
-        if (res.status === 200) {
-          alert(`Student ${name} (Roll: ${roll}) deleted successfully!`);
-          loadStudents();
-          e.target.reset();
-        }
+        const res = await axios.delete(`${apiUrl}/delete`, { data: { roll_no: rollNo } });
+        alert(`Student ${name} (Roll No ${rollNo}) deleted successfully!`);
+        loadStudents();
+        e.target.reset();
       } catch (err) {
         console.error("Error deleting student:", err);
+        alert("Error deleting student");
       }
     });
+
 
     // Update Student (PUT)
       document.getElementById("studentUpdateForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        // Always include roll_no
+
+        const rollNo = parseInt(document.getElementById("updateRoll").value);
+
+        // Check if roll number exists in table
+        const rows = document.querySelectorAll("#studentBody tr");
+        let exists = false;
+        rows.forEach(row => {
+          const existingRoll = parseInt(row.cells[0].textContent);
+          if (existingRoll === rollNo) exists = true;
+        });
+
+        if (!exists) {
+          alert(`Student with Roll No ${rollNo} does not exist!`);
+          return;
+        }
+
+        // Prepare student data
         const student = {
-          roll_no: updateRoll.value,
-          name: updateName.value || undefined,
-          father: updateFather.value || undefined,
-          mother: updateMother.value || undefined,
-          course: updateCourse.value || undefined,
-          year: updateYear.value || undefined,
-          contact: updateContact.value || undefined
+          roll_no: rollNo,
+          name: document.getElementById("updateName").value || undefined,
+          father: document.getElementById("updateFather").value || undefined,
+          mother: document.getElementById("updateMother").value || undefined,
+          course: document.getElementById("updateCourse").value || undefined,
+          year: document.getElementById("updateYear").value || undefined,
+          contact: document.getElementById("updateContact").value || undefined
         };
 
-        // remove only undefined fields
+        // Remove undefined fields
         Object.keys(student).forEach(key => {
           if (student[key] === undefined) delete student[key];
         });
 
         try {
           const res = await axios.put(`${apiUrl}/update`, student);
-          alert(`Student Roll ${updateRoll.value} updated successfully!`);
+          alert(`Student Roll No ${rollNo} updated successfully!`);
           loadStudents();
           e.target.reset();
         } catch (err) {
